@@ -28,6 +28,20 @@ public:
     Q_INVOKABLE QString requestModule(const QString& fromModuleName,
                                       const QString& moduleName) override;
 
+    // Scoped counterpart used only when the target is an explicit runtime
+    // instance. The legacy name-only requestModule API remains unchanged.
+    Q_INVOKABLE QString requestModuleScoped(const QString& fromModuleName,
+                                            const QString& moduleName,
+                                            const QString& instanceId);
+
+    // Register a target bootstrap token for one explicit runtime instance.
+    // authToken is repeated from the transport envelope so this provider can
+    // enforce its privileged core/capability-channel check.
+    Q_INVOKABLE bool informModuleTokenScoped(const QString& authToken,
+                                             const QString& moduleName,
+                                             const QString& instanceId,
+                                             const QString& token);
+
     Q_INVOKABLE bool registerRestriction(const QString& authToken,
                                          const QString& targetModule,
                                          const QStringList& allowedCallers) override;

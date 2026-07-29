@@ -32,6 +32,7 @@
 
 #include "capability_module_plugin.h"
 #include "logos_api.h"
+#include "logos_api_client.h"
 #include "token_manager.h"
 
 namespace {
@@ -309,4 +310,99 @@ LOGOS_TEST(registerRestriction_overwrites_previous_for_same_target) {
     // old_caller is no longer allowed; new_caller is.
     LOGOS_ASSERT_TRUE(plugin.requestModule("old_caller", "target_module").isEmpty());
     LOGOS_ASSERT_FALSE(plugin.requestModule("new_caller", "target_module").isEmpty());
+}
+
+// ── Explicit-instance authorization ────────────────────────────────────────
+
+LOGOS_TEST(informModuleTokenScoped_keeps_bootstrap_tokens_per_instance) {
+    LogosMockSetup mock;
+    seedTrustedChannel();
+
+    CapabilityModulePlugin plugin;
+    LogosAPI api("capability_module");
+    plugin.initLogos(&api);
+
+    LOGOS_ASSERT_TRUE(plugin.informModuleTokenScoped(
+        kTrustedToken, "lez_indexer_module", "zone_alpha", "alpha-bootstrap"));
+    LOGOS_ASSERT_TRUE(plugin.informModuleTokenScoped(
+        kTrustedToken, "lez_indexer_module", "zone_beta", "beta-bootstrap"));
+
+    const QString alphaKey = logos::scopedModuleTokenKey(
+        "lez_indexer_module", "zone_alpha");
+    const QString betaKey = logos::scopedModuleTokenKey(
+        "lez_indexer_module", "zone_beta");
+    LOGOS_ASSERT_EQ(TokenManager::instance().getToken(alphaKey), QString("alpha-bootstrap"));
+    LOGOS_ASSERT_EQ(TokenManager::instance().getToken(betaKey), QString("beta-bootstrap"));
+    LOGOS_ASSERT_TRUE(TokenManager::instance().getToken("lez_indexer_module").isEmpty());
+}
+
+LOGOS_TEST(informModuleTokenScoped_rejects_untrusted_business_token) {
+    LogosMockSetup mock;
+    seedTrustedChannel();
+    seedModule("untrusted_module");
+
+    CapabilityModulePlugin plugin;
+    LogosAPI api("capability_module");
+    plugin.initLogos(&api);
+
+    LOGOS_ASSERT_FALSE(plugin.informModuleTokenScoped(
+        "seed-token-untrusted_module", "lez_indexer_module", "zone_alpha", "forged-bootstrap"));
+    LOGOS_ASSERT_TRUE(TokenManager::instance().getToken(logos::scopedModuleTokenKey(
+        "lez_indexer_module", "zone_alpha")).isEmpty());
+}
+
+LOGOS_TEST(requestModuleScoped_uses_scoped_bootstrap_without_default_fallback) {
+    LogosMockSetup mock;
+    seedTrustedChannel();
+    seedModule("requester_module");
+    // A default-instance bootstrap credential exists, but the explicit Zone is
+    // not registered yet. A scoped request must not use the default target.
+    seedModule("lez_indexer_module");
+
+    CapabilityModulePlugin plugin;
+    LogosAPI api("capability_module");
+    plugin.initLogos(&api);
+
+    LOGOS_ASSERT_TRUE(plugin.requestModuleScoped(
+        "requester_module", "lez_indexer_module", "zone_alpha").isEmpty());
+
+    LOGOS_ASSERT_TRUE(plugin.informModuleTokenScoped(
+        kTrustedToken, "lez_indexer_module", "zone_alpha", "alpha-bootstrap"));
+    LOGOS_ASSERT_TRUE(plugin.informModuleTokenScoped(
+        kTrustedToken, "lez_indexer_module", "zone_beta", "beta-bootstrap"));
+
+    const QString alphaToken = plugin.requestModuleScoped(
+        "requester_module", "lez_indexer_module", "zone_alpha");
+    const QString betaToken = plugin.requestModuleScoped(
+        "requester_module", "lez_indexer_module", "zone_beta");
+    LOGOS_ASSERT(kUuidRegex.match(alphaToken).hasMatch());
+    LOGOS_ASSERT(kUuidRegex.match(betaToken).hasMatch());
+    LOGOS_ASSERT(alphaToken != betaToken);
+}
+
+LOGOS_TEST(requestModuleScoped_rejects_invalid_identity_and_restrictions) {
+    LogosMockSetup mock;
+    seedTrustedChannel();
+    seedModule("allowed_caller");
+    seedModule("blocked_caller");
+
+    CapabilityModulePlugin plugin;
+    LogosAPI api("capability_module");
+    plugin.initLogos(&api);
+
+    LOGOS_ASSERT_TRUE(plugin.informModuleTokenScoped(
+        kTrustedToken, "lez_indexer_module", "zone_alpha", "alpha-bootstrap"));
+    LOGOS_ASSERT_TRUE(plugin.requestModuleScoped(
+        "allowed_caller", "lez_indexer_module", "").isEmpty());
+    LOGOS_ASSERT_TRUE(plugin.requestModuleScoped(
+        "", "lez_indexer_module", "zone_alpha").isEmpty());
+    LOGOS_ASSERT_TRUE(plugin.requestModuleScoped(
+        "allowed_caller", "", "zone_alpha").isEmpty());
+
+    LOGOS_ASSERT_TRUE(plugin.registerRestriction(
+        kTrustedToken, "lez_indexer_module", QStringList{"allowed_caller"}));
+    LOGOS_ASSERT_TRUE(plugin.requestModuleScoped(
+        "blocked_caller", "lez_indexer_module", "zone_alpha").isEmpty());
+    LOGOS_ASSERT(kUuidRegex.match(plugin.requestModuleScoped(
+        "allowed_caller", "lez_indexer_module", "zone_alpha")).hasMatch());
 }

@@ -122,6 +122,105 @@ QString CapabilityModulePlugin::requestModule(const QString& fromModuleName, con
     return authTokenString;
 }
 
+QString CapabilityModulePlugin::requestModuleScoped(const QString& fromModuleName,
+                                                     const QString& moduleName,
+                                                     const QString& instanceId)
+{
+    qDebug() << "CapabilityModulePlugin::requestModuleScoped called with fromModuleName:"
+             << fromModuleName << "moduleName:" << moduleName
+             << "instanceId:" << instanceId;
+
+    if (!logosAPI) {
+        qWarning() << "CapabilityModulePlugin::requestModuleScoped: LogosAPI not initialized";
+        return {};
+    }
+
+    if (fromModuleName.isEmpty() || moduleName.isEmpty() || instanceId.isEmpty()) {
+        qWarning() << "CapabilityModulePlugin::requestModuleScoped: rejecting empty module or instance identity";
+        return {};
+    }
+
+    TokenManager* tokenManager = logosAPI->getTokenManager();
+
+    if (!tokenManager->getTokenKeys().contains(fromModuleName)) {
+        qWarning() << "CapabilityModulePlugin::requestModuleScoped: rejecting request from unknown"
+                   << "module identity:" << fromModuleName;
+        return {};
+    }
+
+    const QString targetKey = logos::scopedModuleTokenKey(moduleName, instanceId);
+    const QString moduleToken = tokenManager->getToken(targetKey);
+    if (moduleToken.isEmpty()) {
+        qWarning() << "CapabilityModulePlugin::requestModuleScoped: rejecting request for unknown"
+                   << "target module instance:" << moduleName << instanceId;
+        return {};
+    }
+
+    if (auto it = m_restrictions.constFind(moduleName); it != m_restrictions.constEnd()) {
+        if (!it->contains(fromModuleName)) {
+            qWarning() << "CapabilityModulePlugin::requestModuleScoped: access policy denies"
+                       << fromModuleName << "->" << moduleName << instanceId;
+            return {};
+        }
+    }
+
+    const QString authTokenString = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    LogosAPIClient* targetClient = logosAPI->getClient(moduleName, instanceId);
+    if (!targetClient) {
+        qWarning() << "CapabilityModulePlugin::requestModuleScoped: failed to create target client for"
+                   << moduleName << instanceId;
+        return {};
+    }
+
+    const bool success = targetClient->informModuleToken_module(
+        moduleToken, moduleName, fromModuleName, authTokenString);
+    if (!success) {
+        qWarning() << "CapabilityModulePlugin::requestModuleScoped: failed to inform"
+                   << moduleName << "instance" << instanceId
+                   << "about token for" << fromModuleName;
+        return {};
+    }
+
+    qDebug() << "CapabilityModulePlugin::requestModuleScoped: successfully informed"
+             << moduleName << "instance" << instanceId
+             << "about token for" << fromModuleName;
+    return authTokenString;
+}
+
+bool CapabilityModulePlugin::informModuleTokenScoped(const QString& authToken,
+                                                      const QString& moduleName,
+                                                      const QString& instanceId,
+                                                      const QString& token)
+{
+    if (!logosAPI) {
+        qWarning() << "CapabilityModulePlugin::informModuleTokenScoped: LogosAPI not initialized";
+        return false;
+    }
+
+    if (moduleName.isEmpty() || instanceId.isEmpty() || token.isEmpty()) {
+        qWarning() << "CapabilityModulePlugin::informModuleTokenScoped: rejecting empty module, instance, or token";
+        return false;
+    }
+
+    TokenManager* tokenManager = logosAPI->getTokenManager();
+    const QString coreToken = tokenManager->getToken(QStringLiteral("core"));
+    const QString capToken = tokenManager->getToken(QStringLiteral("capability_module"));
+    const bool callerIsTrusted =
+        (!coreToken.isEmpty() && constantTimeEquals(authToken, coreToken)) ||
+        (!capToken.isEmpty() && constantTimeEquals(authToken, capToken));
+    if (authToken.isEmpty() || !callerIsTrusted) {
+        qWarning() << "CapabilityModulePlugin::informModuleTokenScoped: rejecting bootstrap token for"
+                   << moduleName << "instance" << instanceId
+                   << "from an untrusted caller";
+        return false;
+    }
+
+    tokenManager->saveToken(logos::scopedModuleTokenKey(moduleName, instanceId), token);
+    qDebug() << "CapabilityModulePlugin::informModuleTokenScoped: stored bootstrap token for"
+             << moduleName << "instance" << instanceId;
+    return true;
+}
+
 bool CapabilityModulePlugin::registerRestriction(const QString& authToken,
                                                  const QString& targetModule,
                                                  const QStringList& allowedCallers)
