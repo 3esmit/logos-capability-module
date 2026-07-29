@@ -2463,6 +2463,7 @@
       "original": {
         "owner": "logos-co",
         "repo": "logos-module-builder",
+        "rev": "4717b9af35d88a20a960067ee55bc5417af5a1f0",
         "type": "github"
       }
     },
@@ -11152,15 +11153,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1784686752,
-        "narHash": "sha256-YfIUX0xYtvp7FrvYJtBDDZNzQsCPihWEZ6GxvKwVifA=",
-        "owner": "logos-co",
+        "lastModified": 1785295173,
+        "narHash": "sha256-qXK3TCm9CFBqJ1JA80KkVQh3ElO9pgzhnAVtdLnnC3I=",
+        "owner": "3esmit",
         "repo": "logos-protocol",
-        "rev": "6401e30ae1cfabac77285ee8e7a82c2cef3858f1",
+        "rev": "6b8038b1092ccc00cff591310e47389f93104145",
         "type": "github"
       },
       "original": {
-        "owner": "logos-co",
+        "owner": "3esmit",
         "repo": "logos-protocol",
         "type": "github"
       }
@@ -11624,15 +11625,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1784687933,
-        "narHash": "sha256-GECc9sqeFWYQdya1/QDH0NThHRidy6MRIBAIaO7AAyE=",
-        "owner": "logos-co",
+        "lastModified": 1785288713,
+        "narHash": "sha256-SsJRxbyjKOomGn7PZj87quRqE5iMzDFb2pLECn2037M=",
+        "owner": "3esmit",
         "repo": "logos-qt-sdk",
-        "rev": "2ec59459a3a6ad541eab1b3b10861ae76575e488",
+        "rev": "0181a0c3499c48c4200c749f072cc99b1c387668",
         "type": "github"
       },
       "original": {
-        "owner": "logos-co",
+        "owner": "3esmit",
         "repo": "logos-qt-sdk",
         "type": "github"
       }
