@@ -5,7 +5,9 @@
     logos-module-builder = {
       # The scoped inputs deliberately stay on the known-compatible builder
       # revision until they are available from its default dependency graph.
-      url = "github:3esmit/logos-module-builder?rev=4717b9af35d88a20a960067ee55bc5417af5a1f0";
+      # Stacked on the maintained builder reconciliation; advance to its
+      # merged revision before landing this module update.
+      url = "github:3esmit/logos-module-builder?rev=324b459c3f7b59171d249f3ccbcc362403b3fcaf";
       # Override the builder's own SDK graph. This module has no module
       # dependencies, so exposing duplicate top-level inputs only expands the
       # lock file without affecting its build.
