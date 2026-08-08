@@ -2455,13 +2455,13 @@
       "locked": {
         "lastModified": 1784690194,
         "narHash": "sha256-jb3ocidMibfQgIlzcwbqyceTYfi+T7xkV2OjNxjOwC8=",
-        "owner": "logos-co",
+        "owner": "3esmit",
         "repo": "logos-module-builder",
         "rev": "4717b9af35d88a20a960067ee55bc5417af5a1f0",
         "type": "github"
       },
       "original": {
-        "owner": "logos-co",
+        "owner": "3esmit",
         "repo": "logos-module-builder",
         "rev": "4717b9af35d88a20a960067ee55bc5417af5a1f0",
         "type": "github"
