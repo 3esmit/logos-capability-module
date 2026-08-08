@@ -6269,17 +6269,17 @@
         "rust-overlay": "rust-overlay_5"
       },
       "locked": {
-        "lastModified": 1786220772,
+        "lastModified": 1786226594,
         "narHash": "sha256-9IQla/CTammlIqgRlZdfRZtnIBHnsVxSyefVJ8vHIzo=",
         "owner": "3esmit",
         "repo": "logos-module-builder",
-        "rev": "e1ea6f1bb90d97666049025cd8c1604e8e284c6b",
+        "rev": "324b459c3f7b59171d249f3ccbcc362403b3fcaf",
         "type": "github"
       },
       "original": {
         "owner": "3esmit",
         "repo": "logos-module-builder",
-        "rev": "e1ea6f1bb90d97666049025cd8c1604e8e284c6b",
+        "rev": "324b459c3f7b59171d249f3ccbcc362403b3fcaf",
         "type": "github"
       }
     },
