@@ -41,9 +41,16 @@ namespace {
 const QRegularExpression kUuidRegex(
     QStringLiteral("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"));
 
-// Seed a module's token so capability_module treats it as a known/loaded module.
+// Seed both directions for a loaded module: capability_module calls it through
+// the outbound target map and accepts it through the inbound caller roster.
 void seedModule(const QString& name) {
-    TokenManager::instance().saveToken(name, "seed-token-" + name);
+    const QString token = "seed-token-" + name;
+    TokenManager::instance().saveToken(name, token);
+    TokenManager::instance().saveInboundToken(name, token);
+}
+
+void seedInboundCaller(const QString& name) {
+    TokenManager::instance().saveInboundToken(name, "inbound-token-" + name);
 }
 
 // The trusted core/capability_module auth token. registerRestriction requires
@@ -175,6 +182,48 @@ LOGOS_TEST(requestModule_succeeds_for_known_caller_and_target) {
 
     LOGOS_ASSERT_FALSE(token.isEmpty());
     LOGOS_ASSERT(kUuidRegex.match(token).hasMatch());
+}
+
+LOGOS_TEST(requestModule_accepts_inbound_caller_grant) {
+    LogosMockSetup mock;
+    seedInboundCaller("requester_module");
+    seedModule("target_module");
+
+    CapabilityModulePlugin plugin;
+    LogosAPI api("capability_module");
+    plugin.initLogos(&api);
+
+    const QString token = plugin.requestModule("requester_module", "target_module");
+
+    LOGOS_ASSERT(kUuidRegex.match(token).hasMatch());
+}
+
+LOGOS_TEST(requestModule_accepts_inbound_target_grant) {
+    LogosMockSetup mock;
+    seedInboundCaller("requester_module");
+    TokenManager::instance().saveInboundToken("target_module", "inbound-target");
+
+    CapabilityModulePlugin plugin;
+    LogosAPI api("capability_module");
+    plugin.initLogos(&api);
+
+    const QString token = plugin.requestModule("requester_module", "target_module");
+
+    LOGOS_ASSERT(kUuidRegex.match(token).hasMatch());
+}
+
+LOGOS_TEST(requestModule_rejects_outbound_only_caller_grant) {
+    LogosMockSetup mock;
+    TokenManager::instance().saveToken("requester_module", "outbound-only");
+    seedModule("target_module");
+
+    CapabilityModulePlugin plugin;
+    LogosAPI api("capability_module");
+    plugin.initLogos(&api);
+
+    const QString token = plugin.requestModule("requester_module", "target_module");
+
+    LOGOS_ASSERT_TRUE(token.isEmpty());
 }
 
 // ── Access-policy enforcement (registerRestriction + requestModule) ─────────
