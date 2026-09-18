@@ -5,6 +5,7 @@
   "description": "Coordinates permissions between modules",
   "author": "Logos Core Team",
   "type": "core",
+  "interface": "legacy",
   "category": "security",
   "main": "capability_module_plugin",
   "dependencies": [],
