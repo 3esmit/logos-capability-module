@@ -5,7 +5,7 @@
     logos-module-builder = {
       # Keep module compilation on the maintained builder while its
       # host-service and universal-module contracts remain compatible.
-      url = "github:3esmit/logos-module-builder?rev=9b815350fe67675691fa1cb70eb356ba64813028";
+      url = "github:3esmit/logos-module-builder?rev=d6be326da6c7738818d345f1cca79ad77ce45ae7";
 
       # Break the builder -> standalone-app -> capability-module cycle in this
       # core module's lock. UI modules must not copy this follows override.
