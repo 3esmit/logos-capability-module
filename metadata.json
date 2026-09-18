@@ -12,6 +12,10 @@
     "module_coordination",
     "permission_management"
   ],
+  "host_services": [
+    "token_registry",
+    "token_delivery"
+  ],
 
   "nix": {
     "packages": {
