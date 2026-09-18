@@ -1975,17 +1975,17 @@
         "rust-overlay": "rust-overlay_3"
       },
       "locked": {
-        "lastModified": 1789705758,
-        "narHash": "sha256-3pOYcWm3QEtbbxo3WxSb1ZnDpBZZIIdV5WbpYV3XPDI=",
+        "lastModified": 1789724337,
+        "narHash": "sha256-GlDNiOAyVwADW7dJ81vPy3/9N1OsdLfK1PF6YtjBPLs=",
         "owner": "3esmit",
         "repo": "logos-module-builder",
-        "rev": "3f4eb920469b69f7a8ee30ea34a88dbcdd624264",
+        "rev": "9b815350fe67675691fa1cb70eb356ba64813028",
         "type": "github"
       },
       "original": {
         "owner": "3esmit",
         "repo": "logos-module-builder",
-        "rev": "3f4eb920469b69f7a8ee30ea34a88dbcdd624264",
+        "rev": "9b815350fe67675691fa1cb70eb356ba64813028",
         "type": "github"
       }
     },
