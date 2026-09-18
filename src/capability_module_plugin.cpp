@@ -65,10 +65,10 @@ QString CapabilityModulePlugin::requestModule(const QString& fromModuleName, con
 
     TokenManager* tokenManager = logosAPI->getTokenManager();
 
-    // Known-caller gate: the requesting identity must be a module capability_module
-    // already knows about. Fail closed on an unknown name rather than mint a token
-    // for a self-asserted identity that was never loaded.
-    if (!tokenManager->getTokenKeys().contains(fromModuleName)) {
+    // Known-caller gate: the requesting identity must have a token delivered to
+    // capability_module. Caller grants live in the inbound-only roster; the
+    // outbound map is reserved for targets this module may call.
+    if (!tokenManager->inbound().contains(fromModuleName)) {
         qWarning() << "CapabilityModulePlugin::requestModule: rejecting request from unknown"
                    << "module identity:" << fromModuleName
                    << "- no token registered for it (unverified requesting identity)";
@@ -77,7 +77,14 @@ QString CapabilityModulePlugin::requestModule(const QString& fromModuleName, con
 
     // Known-target gate: an empty target token means the target is not loaded /
     // unknown. Don't hand back a token the target would reject anyway — fail closed.
-    const QString moduleToken = tokenManager->getToken(moduleName);
+    // Core delivers default target credentials through the provider's inbound
+    // door. Prefer the registry's outbound mirror when present, but retain
+    // the inbound record for the host-side LogosAPI store, which does not see
+    // the module-image token-registry carve-out.
+    QString moduleToken = tokenManager->getToken(moduleName);
+    if (moduleToken.isEmpty()) {
+        moduleToken = tokenManager->inbound().token(moduleName);
+    }
     if (moduleToken.isEmpty()) {
         qWarning() << "CapabilityModulePlugin::requestModule: rejecting request for unknown"
                    << "target module:" << moduleName << "- no token registered for it";
@@ -151,7 +158,7 @@ QString CapabilityModulePlugin::requestModuleScoped(const QString& fromModuleNam
 
     TokenManager* tokenManager = logosAPI->getTokenManager();
 
-    if (!tokenManager->getTokenKeys().contains(fromModuleName)) {
+    if (!tokenManager->inbound().contains(fromModuleName)) {
         qWarning() << "CapabilityModulePlugin::requestModuleScoped: rejecting request from unknown"
                    << "module identity:" << fromModuleName;
         return {};
