@@ -503,6 +503,11 @@ sections:
       that hosts it). Overriding both pins the whole capability layer to this
       commit.
 
+      These are deliberately the only overrides. The caller-aware host stack is
+      merged and logoscore resolves it through its normal locks; a temporary
+      liblogos/SDK override would mask the cross-package compatibility this
+      doc-test is meant to exercise.
+
       > Each override URL carries a `{release}` placeholder the doc-test runner
       > expands to a concrete ref: locally that is this `logos-capability-module`
       > checkout's `HEAD` (see `run.sh`); in CI it is the commit being tested.
@@ -658,6 +663,9 @@ sections:
         code_block: "logoscore call orchestrator_module lastGreetedEvent"
         expect_contains:
           - '"result":"Hello, Events!"'
+
+      - title: "Dump the daemon log"
+        run: "cat logs.txt || true"
 
       - title: "Stop the daemon"
         run: "./logos/bin/logoscore stop"

@@ -5,7 +5,6 @@
   "description": "Coordinates permissions between modules",
   "author": "Logos Core Team",
   "type": "core",
-  "interface": "legacy",
   "category": "security",
   "main": "capability_module_plugin",
   "dependencies": [],
@@ -13,20 +12,30 @@
     "module_coordination",
     "permission_management"
   ],
+  "nix": {
+    "packages": {
+      "build": [
+        "boost"
+      ],
+      "runtime": [
+        "boost"
+      ]
+    },
+    "external_libraries": [],
+    "cmake": {
+      "find_packages": [
+        "Boost"
+      ],
+      "extra_sources": []
+    }
+  },
+  "interface": "universal",
   "host_services": [
     "token_registry",
     "token_delivery"
   ],
-
-  "nix": {
-    "packages": {
-      "build": [],
-      "runtime": []
-    },
-    "external_libraries": [],
-    "cmake": {
-      "find_packages": [],
-      "extra_sources": []
-    }
+  "codegen": {
+    "impl_class": "CapabilityModuleImpl",
+    "impl_header": "src/capability_module_impl.h"
   }
 }
