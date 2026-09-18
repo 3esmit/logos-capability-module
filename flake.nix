@@ -4,11 +4,18 @@
   inputs = {
     logos-module-builder = {
       # Keep module compilation on the maintained builder while its
-      # host-service metadata contract is carried through the dependency graph.
+      # host-service and universal-module contracts remain compatible.
       url = "github:3esmit/logos-module-builder?rev=3f4eb920469b69f7a8ee30ea34a88dbcdd624264";
-      # The builder revision carries the maintained Qt host and protocol pins;
-      # keep its SDK graph intact so generator and host APIs stay compatible.
+
+      # Break the builder -> standalone-app -> capability-module cycle in this
+      # core module's lock. UI modules must not copy this follows override.
+      inputs.logos-standalone-app.follows = "";
+
+      # The maintained liblogos input otherwise points back at this capability
+      # module and recreates the same lock cycle one level deeper.
+      inputs.logos-liblogos.inputs.logos-capability-module.follows = "";
     };
+
   };
 
   outputs = inputs@{ logos-module-builder, ... }:
